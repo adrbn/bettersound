@@ -1,6 +1,7 @@
 import AppKit
 import Combine
 import ServiceManagement
+import Sparkle
 import SwiftUI
 
 @main
@@ -20,6 +21,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var topY: CGFloat = 0
     private var resize: AnyCancellable?
     private var hook: ControlCenterHook?
+    private let updater = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
 
     func applicationDidFinishLaunching(_ note: Notification) {
         AppDelegate.shared = self
@@ -120,6 +122,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             login.target = self
             login.state = SMAppService.mainApp.status == .enabled ? .on : .off
             menu.addItem(.separator())
+            let update = menu.addItem(withTitle: String(localized: "Check for Updates…"), action: #selector(SPUStandardUpdaterController.checkForUpdates(_:)), keyEquivalent: "")
+            update.target = updater
+            for (title, url) in [(String(localized: "BetterSound on GitHub"), "https://github.com/adrbn/bettersound"),
+                                 (String(localized: "Support on Ko-fi"), "https://ko-fi.com/adrbn")] {
+                let item = menu.addItem(withTitle: title, action: #selector(openLink(_:)), keyEquivalent: "")
+                item.target = self
+                item.representedObject = URL(string: url)
+            }
+            menu.addItem(.separator())
             menu.addItem(withTitle: String(localized: "Quit BetterSound"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
             statusItem.menu = menu
             statusItem.button?.performClick(nil)
@@ -127,6 +138,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         } else {
             toggle(below: statusItem.button?.window)
         }
+    }
+
+    @objc private func openLink(_ item: NSMenuItem) {
+        if let url = item.representedObject as? URL { NSWorkspace.shared.open(url) }
     }
 
     @objc private func toggleLogin() {

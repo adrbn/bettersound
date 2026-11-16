@@ -30,7 +30,8 @@ final class Mixer: ObservableObject {
     private let defaults = UserDefaults.standard
 
     init() {
-        volumes = defaults.dictionary(forKey: "volumes") as? [String: Float] ?? [:]
+        // NSNumber -> Float bridging fails for doubles that are not exact floats: go through floatValue.
+        volumes = (defaults.dictionary(forKey: "volumes") as? [String: NSNumber] ?? [:]).mapValues(\.floatValue)
         muted = Set(defaults.stringArray(forKey: "muted") ?? [])
         routes = defaults.dictionary(forKey: "routes") as? [String: String] ?? [:]
         refresh()

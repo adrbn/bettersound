@@ -37,5 +37,13 @@
 	<true/>
 	<key>NSAudioCaptureUsageDescription</key>
 	<string>BetterSound changes each app's volume as it plays. Nothing is recorded or saved.</string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUFeedURL</key>
+	<string>https://github.com/adrbn/bettersound/releases/latest/download/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>xAxsYqYvDN8n1QZkFpp6ScRfqZPS6O6/ikeKbpZXFwA=</string>
+	<key>SUScheduledCheckInterval</key>
+	<integer>86400</integer>
 </dict>
 </plist>

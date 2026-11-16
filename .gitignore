@@ -1,3 +1,5 @@
 build/
 *.xcodeproj
 .DS_Store
+# Sparkle private signing key: never commit
+.secrets/
