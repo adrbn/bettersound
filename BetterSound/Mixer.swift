@@ -1,4 +1,5 @@
 import AppKit
+import AudioToolbox
 import CoreAudio
 import Foundation
 
@@ -26,7 +27,13 @@ final class Mixer: ObservableObject {
 
     private var taps: [String: AppTap] = [:]
     var debugState: String { "volumes=\(volumes) taps=\(taps.mapValues { "\($0.deviceUID) gain=\($0.gain) peak=\($0.peakLevel)" })" }
-    private var timer: Timer?
+    // Core Audio tells us when something changes: nothing runs while idle.
+    private var systemListeners: [AudioListener] = []
+    private var processListeners: [AudioObjectID: AudioListener] = [:]
+    private var volumeListeners: [AudioListener] = []
+    private var listenedDevice = AudioObjectID(kAudioObjectUnknown)
+    private var refreshPending = false
+    private var owners: [pid_t: NSRunningApplication?] = [:]
     private let defaults = UserDefaults.standard
 
     init() {
@@ -34,10 +41,38 @@ final class Mixer: ObservableObject {
         volumes = (defaults.dictionary(forKey: "volumes") as? [String: NSNumber] ?? [:]).mapValues(\.floatValue)
         muted = Set(defaults.stringArray(forKey: "muted") ?? [])
         routes = defaults.dictionary(forKey: "routes") as? [String: String] ?? [:]
+        systemListeners = [kAudioHardwarePropertyDevices, kAudioHardwarePropertyDefaultOutputDevice]
+            .map { AudioListener(.system, $0, onChange: changed) }
+            + [AudioListener(.system, kAudioHardwarePropertyProcessObjectList, onChange: processesChanged)]
         refresh()
-        // ponytail: 1 s polling; switch to AudioObject property listeners if it ever shows in Activity Monitor.
-        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
-            MainActor.assumeIsolated { self?.refresh() }
+    }
+
+    /// Short-lived audio clients appear and vanish several times a second without playing:
+    /// only listen to them, and refresh when one is playing or one of our rows lost a process.
+    private nonisolated func processesChanged() {
+        MainActor.assumeIsolated {
+            // One call for the list; ask Core Audio about new processes only.
+            let ids = Set(AudioObjectID.system.readArray(kAudioHardwarePropertyProcessObjectList, of: AudioObjectID.self))
+            let rowLost = apps.contains { !$0.processes.isSubset(of: ids) }
+            let newPlaying = ids.contains {
+                processListeners[$0] == nil && $0.read(kAudioProcessPropertyIsRunningOutput, default: UInt32(0)) != 0
+            }
+            watch(ids)
+            if rowLost || newPlaying { changed() }
+        }
+    }
+
+    /// Several properties change at once (a device switch, an app starting): refresh once.
+    private nonisolated func changed() {
+        MainActor.assumeIsolated {
+            guard !refreshPending else { return }
+            refreshPending = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [weak self] in
+                MainActor.assumeIsolated {
+                    self?.refreshPending = false
+                    self?.refresh()
+                }
+            }
         }
     }
 
@@ -123,31 +158,52 @@ final class Mixer: ObservableObject {
     // MARK: State sync
 
     func refresh() {
-        devices = Audio.outputDevices()
-        defaultDeviceID = Audio.defaultOutput
-        if let m = Audio.masterVolume {
-            hasMaster = true
-            master = Audio.masterMuted ? 0 : m
-        } else {
-            hasMaster = false
-        }
-        permission = AudioPermission.status
-        apps = currentApps()
+        // Assign only what changed: every @Published write redraws the panel and the icon.
+        let newDevices = Audio.outputDevices()
+        if newDevices != devices { devices = newDevices }
+        let newDefault = Audio.defaultOutput
+        if newDefault != defaultDeviceID { defaultDeviceID = newDefault }
+        let m = Audio.masterVolume
+        if hasMaster != (m != nil) { hasMaster = m != nil }
+        if let m, case let v = Audio.masterMuted ? 0 : m, v != master { master = v }
+        let p = AudioPermission.status
+        if p != permission { permission = p }
+        let processes = Audio.processes()
+        watch(Set(processes.map(\.objectID)))
+        let newApps = currentApps(processes)
+        if newApps.map(\.id) != apps.map(\.id) || newApps.map(\.processes) != apps.map(\.processes) { apps = newApps }
         apply()
     }
 
+    /// Listen to each process starting or stopping output, and to the default output's volume.
+    private func watch(_ ids: Set<AudioObjectID>) {
+        processListeners = processListeners.filter { ids.contains($0.key) }
+        for id in ids where processListeners[id] == nil {
+            processListeners[id] = AudioListener(id, kAudioProcessPropertyIsRunningOutput, onChange: changed)
+        }
+        guard listenedDevice != defaultDeviceID else { return }
+        listenedDevice = defaultDeviceID
+        let out = kAudioObjectPropertyScopeOutput
+        volumeListeners = [kAudioHardwareServiceDeviceProperty_VirtualMainVolume, kAudioDevicePropertyMute]
+            .map { AudioListener(defaultDeviceID, $0, out, onChange: changed) }
+    }
+
     /// Apps with a playing process, plus apps we're already handling (so a paused app keeps its row).
-    private func currentApps() -> [AppRow] {
+    private func currentApps(_ processes: [AudioProcess]) -> [AppRow] {
         let me = ProcessInfo.processInfo.processIdentifier
         var byApp: [String: AppRow] = [:]
         var playing = Set<String>()
-        for p in Audio.processes() where p.pid > 0 && p.pid != me {
-            guard let app = Audio.owningApp(p.pid), app.processIdentifier != me else { continue }
+        // Short-lived audio clients come and go several times a second: resolve each pid once.
+        owners = owners.filter { pid in processes.contains { $0.pid == pid.key } }
+        for p in processes where p.pid > 0 && p.pid != me {
+            if owners[p.pid] == nil { owners[p.pid] = .some(Audio.owningApp(p.pid)) }
+            guard let app = owners[p.pid] ?? nil, app.processIdentifier != me else { continue }
             let id = app.bundleIdentifier ?? "pid:\(app.processIdentifier)"
-            byApp[id, default: AppRow(id: id,
-                                      name: app.localizedName ?? id,
-                                      icon: app.icon ?? NSImage(),
-                                      processes: [])].processes.insert(p.objectID)
+            if byApp[id] == nil {
+                byApp[id] = apps.first { $0.id == id }.map { AppRow(id: id, name: $0.name, icon: $0.icon, processes: []) }
+                    ?? AppRow(id: id, name: app.localizedName ?? id, icon: app.icon ?? NSImage(), processes: [])
+            }
+            byApp[id]?.processes.insert(p.objectID)
             if p.isPlaying { playing.insert(id) }
         }
         return byApp.values

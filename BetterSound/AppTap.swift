@@ -22,6 +22,19 @@ final class AppTap {
 
     var peakLevel: Float { peak.pointee }
 
+    /// Delay added to the app's audio: the tap's input buffer plus the aggregate's output path
+    /// (buffer, safety offset, device latency), in ms.
+    var addedLatencyMs: Double {
+        let dev = aggregateID
+        let rate: Float64 = dev.read(kAudioDevicePropertyNominalSampleRate, default: 48000)
+        let buffer: UInt32 = dev.read(kAudioDevicePropertyBufferFrameSize, default: 0)
+        let out = kAudioObjectPropertyScopeOutput
+        let frames = 2 * buffer
+            + dev.read(kAudioDevicePropertySafetyOffset, out, default: UInt32(0))
+            + dev.read(kAudioDevicePropertyLatency, out, default: UInt32(0))
+        return Double(frames) / rate * 1000
+    }
+
     var gain: Float {
         get { target.pointee }
         set { target.pointee = newValue }
@@ -35,7 +48,7 @@ final class AppTap {
         peak.pointee = 0
         do {
             try start()
-            log.info("tap on \(deviceUID, privacy: .public) gain \(gain)")
+            log.info("tap on \(deviceUID, privacy: .public) gain \(gain) added latency \(self.addedLatencyMs, format: .fixed(precision: 1)) ms")
             let peak = self.peak
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
                 guard self != nil else { return }

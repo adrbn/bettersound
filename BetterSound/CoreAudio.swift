@@ -162,3 +162,22 @@ extension Audio {
         return nil
     }
 }
+
+// MARK: - Change notifications
+
+/// Calls `onChange` on the main queue when a property changes, until released.
+final class AudioListener {
+    private let object: AudioObjectID
+    private var addr: AudioObjectPropertyAddress
+    private let block: AudioObjectPropertyListenerBlock
+
+    init(_ object: AudioObjectID, _ selector: AudioObjectPropertySelector,
+         _ scope: AudioObjectPropertyScope = kAudioObjectPropertyScopeGlobal, onChange: @escaping () -> Void) {
+        self.object = object
+        addr = object.address(selector, scope)
+        block = { _, _ in onChange() }
+        AudioObjectAddPropertyListenerBlock(object, &addr, .main, block)
+    }
+
+    deinit { AudioObjectRemovePropertyListenerBlock(object, &addr, .main, block) }
+}
