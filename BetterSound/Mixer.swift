@@ -79,6 +79,7 @@ final class Mixer: ObservableObject {
     }
 
     func selectDefault(_ device: OutputDevice) {
+        taps = [:]   // gone before the switch, or macOS switches back to the device it plays on
         Audio.defaultOutput = device.id
         refresh()
     }

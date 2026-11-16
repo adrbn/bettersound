@@ -100,6 +100,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func application(_ app: NSApplication, open urls: [URL]) {
         if urls.contains(where: { $0.host == "show" }) { toggle(below: nil) }
+        // bettersound://output/<device name>: same as picking it in the panel (scripts, tests).
+        if let url = urls.first(where: { $0.host == "output" }), let dev = mixer.devices.first(where: { $0.name == url.lastPathComponent }) {
+            mixer.selectDefault(dev)
+        }
     }
 
     /// Launching it again (Spotlight, Dock) opens the panel: the menu bar icon can be hidden
