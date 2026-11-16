@@ -27,7 +27,7 @@ BetterSound remplace l'élément Son de la barre des menus et du Centre de contr
 
 <p align="center">Gratuit et open source · une alternative gratuite à Native Sound Mixer · anglais et français</p>
 
-<p align="center"><a href="README.md">English</a> · <b>Français</b></p>
+<p align="center"><sub><a href="README.md">English</a> · <b>Français</b> · <a href="README.de.md">Deutsch</a> · <a href="README.es.md">Español</a> · <a href="README.it.md">Italiano</a> · <a href="README.ru.md">Русский</a> · <a href="README.zh-CN.md">简体中文</a></sub></p>
 
 ---
 

@@ -27,7 +27,7 @@ BetterSound replaces the Sound item in the macOS menu bar and in Control Center,
 
 <p align="center">Free and open source · a free alternative to Native Sound Mixer · English and French</p>
 
-<p align="center"><b>English</b> · <a href="README.fr.md">Français</a></p>
+<p align="center"><sub><b>English</b> · <a href="README.fr.md">Français</a> · <a href="README.de.md">Deutsch</a> · <a href="README.es.md">Español</a> · <a href="README.it.md">Italiano</a> · <a href="README.ru.md">Русский</a> · <a href="README.zh-CN.md">简体中文</a></sub></p>
 
 ---
 
