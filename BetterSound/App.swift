@@ -18,6 +18,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var outsideClick: Any?
     private var topY: CGFloat = 0
     private var resize: AnyCancellable?
+    private var hook: ControlCenterHook?
 
     func applicationDidFinishLaunching(_ note: Notification) {
         AppDelegate.shared = self
@@ -29,7 +30,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         panel = NSPanel(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: true)
         panel.isFloatingPanel = true
-        panel.level = .popUpMenu
+        panel.level = .screenSaver
         panel.backgroundColor = .clear
         panel.hasShadow = true
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
@@ -42,11 +43,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NotificationCenter.default.addObserver(forName: .showBetterSound, object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.toggle(below: nil) }
         }
+        hook = ControlCenterHook(mixer: mixer) { [weak self] ccFrame in self?.show(over: ccFrame) }
+        hook?.start()
+        if !ControlCenterHook.isTrusted { ControlCenterHook.requestTrust() }
+
         if CommandLine.arguments.contains("--show") { show(below: nil) }
+        if CommandLine.arguments.contains("--dump-cc") { ControlCenterAX.dump() }
     }
 
     func application(_ app: NSApplication, open urls: [URL]) {
         if urls.contains(where: { $0.host == "show" }) { toggle(below: nil) }
+    }
+
+    /// Launching it again (Spotlight, Dock) opens the panel: the menu bar icon can be hidden
+    /// behind the notch when the bar is full.
+    func applicationShouldHandleReopen(_ app: NSApplication, hasVisibleWindows: Bool) -> Bool {
+        toggle(below: nil)
+        return false
     }
 
     @objc private func statusClicked() {
@@ -80,6 +93,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         outsideClick = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
             MainActor.assumeIsolated { self?.hide() }
         }
+    }
+
+    /// Opened from the Control Center tile: take Control Center's place, like Apple's Sound view does.
+    private func show(over ccFrame: NSRect) {
+        show(below: nil)
+        let size = panel.frame.size
+        topY = ccFrame.maxY
+        panel.setFrameOrigin(NSPoint(x: ccFrame.maxX - size.width, y: topY - size.height))
     }
 
     private func fitHeight() {

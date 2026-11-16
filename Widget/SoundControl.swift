@@ -11,7 +11,7 @@ struct SoundControl: ControlWidget {
     var body: some ControlWidgetConfiguration {
         StaticControlConfiguration(kind: "dev.adrbn.bettersound.sound") {
             ControlWidgetButton(action: ShowMixerIntent()) {
-                Label("Sound", systemImage: "speaker.wave.2.fill")
+                Label("BetterSound", systemImage: "speaker.wave.2.fill")
             }
         }
         .displayName("BetterSound")
