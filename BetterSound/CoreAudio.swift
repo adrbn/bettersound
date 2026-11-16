@@ -61,9 +61,15 @@ struct OutputDevice: Identifiable, Hashable {
     let name: String
     let transport: UInt32
 
+    /// Speakers get a level icon in the menu bar; headphones and the like show the device.
+    var isSpeaker: Bool { ["laptopcomputer", "hifispeaker", "display", "cable.connector"].contains(symbol) }
+
     var symbol: String {
         let lower = name.lowercased()
+        if lower.contains("airpods max") { return "airpodsmax" }
+        if lower.contains("airpods pro") { return "airpods.pro" }
         if lower.contains("airpods") { return "airpods" }
+        if lower.contains("beats") { return "beats.headphones" }
         switch transport {
         case kAudioDeviceTransportTypeBluetooth, kAudioDeviceTransportTypeBluetoothLE: return "headphones"
         case kAudioDeviceTransportTypeHDMI, kAudioDeviceTransportTypeDisplayPort: return "display"

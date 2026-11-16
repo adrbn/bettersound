@@ -17,6 +17,10 @@ final class AppTap {
     // Shared with the real-time thread. Aligned Float32 loads/stores don't tear on arm64.
     private let target = UnsafeMutablePointer<Float>.allocate(capacity: 1)
     private let current = UnsafeMutablePointer<Float>.allocate(capacity: 1)
+    /// Loudest input sample since the last check: tells a working tap from a silent one (no permission).
+    private let peak = UnsafeMutablePointer<Float>.allocate(capacity: 1)
+
+    var peakLevel: Float { peak.pointee }
 
     var gain: Float {
         get { target.pointee }
@@ -28,8 +32,15 @@ final class AppTap {
         self.deviceUID = deviceUID
         target.pointee = gain
         current.pointee = gain
+        peak.pointee = 0
         do {
             try start()
+            log.info("tap on \(deviceUID, privacy: .public) gain \(gain)")
+            let peak = self.peak
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [weak self] in
+                guard self != nil else { return }
+                log.info("tap peak after 2 s: \(peak.pointee)")
+            }
         } catch {
             log.error("tap failed: \(error.localizedDescription, privacy: .public)")
             stop()
@@ -41,6 +52,7 @@ final class AppTap {
         stop()
         target.deallocate()
         current.deallocate()
+        peak.deallocate()
     }
 
     private func start() throws {
@@ -65,9 +77,9 @@ final class AppTap {
         ]
         try check(AudioHardwareCreateAggregateDevice(config as CFDictionary, &aggregateID), "create aggregate")
 
-        let target = self.target, current = self.current
+        let target = self.target, current = self.current, peak = self.peak
         try check(AudioDeviceCreateIOProcIDWithBlock(&procID, aggregateID, nil) { _, input, _, output, _ in
-            AppTap.render(input: input, output: output, target: target.pointee, current: current)
+            AppTap.render(input: input, output: output, target: target.pointee, current: current, peak: peak)
         }, "create IOProc")
         try check(AudioDeviceStart(aggregateID, procID), "start device")
     }
@@ -93,7 +105,8 @@ final class AppTap {
     private static func render(input: UnsafePointer<AudioBufferList>,
                                output: UnsafeMutablePointer<AudioBufferList>,
                                target: Float,
-                               current: UnsafeMutablePointer<Float>) {
+                               current: UnsafeMutablePointer<Float>,
+                               peak: UnsafeMutablePointer<Float>) {
         let outs = UnsafeMutableAudioBufferListPointer(output)
         for buf in outs { if let d = buf.mData { memset(d, 0, Int(buf.mDataByteSize)) } }
 
@@ -112,6 +125,7 @@ final class AppTap {
         for f in 0..<frames {
             g += step
             let l = s[f * inCh], r = inCh > 1 ? s[f * inCh + 1] : l
+            peak.pointee = max(peak.pointee, abs(l))
             if outCh == 1 {
                 d[f] = (l + r) * 0.5 * g
             } else {

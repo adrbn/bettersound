@@ -23,6 +23,7 @@ final class Mixer: ObservableObject {
     @Published private var routes: [String: String]   // bundle ID -> device UID, persisted
 
     private var taps: [String: AppTap] = [:]
+    var debugState: String { "volumes=\(volumes) taps=\(taps.mapValues { "\($0.deviceUID) gain=\($0.gain) peak=\($0.peakLevel)" })" }
     private var timer: Timer?
     private let defaults = UserDefaults.standard
 
@@ -38,6 +39,17 @@ final class Mixer: ObservableObject {
     }
 
     // MARK: Queries for the UI
+
+    var menuBarSymbol: String {
+        let device = devices.first { $0.id == defaultDeviceID }
+        if let device, !device.isSpeaker { return device.symbol }
+        switch master {
+        case 0: return "speaker.slash.fill"
+        case ..<0.34: return "speaker.wave.1.fill"
+        case ..<0.67: return "speaker.wave.2.fill"
+        default: return "speaker.wave.3.fill"
+        }
+    }
 
     func volume(_ id: String) -> Float { volumes[id] ?? 1 }
     func isMuted(_ id: String) -> Bool { muted.contains(id) }

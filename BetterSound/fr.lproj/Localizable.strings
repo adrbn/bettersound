@@ -1,0 +1,8 @@
+"Sound" = "Son";
+"Apps" = "Apps";
+"Output" = "Sortie";
+"Sound Settings…" = "Réglages Son…";
+"System Output" = "Sortie du système";
+"Allow" = "Autoriser";
+"Per-app volume needs access to system audio. Nothing is recorded." = "Le volume par app a besoin d’accéder à l’audio du système. Rien n’est enregistré.";
+"Quit BetterSound" = "Quitter BetterSound";

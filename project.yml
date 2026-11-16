@@ -1,6 +1,7 @@
 name: BetterSound
 
 options:
+  developmentLanguage: en
   bundleIdPrefix: dev.adrbn
   deploymentTarget:
     macOS: "26.0"
@@ -25,9 +26,7 @@ targets:
   BetterSound:
     type: application
     platform: macOS
-    sources: [BetterSound, Shared]
-    dependencies:
-      - target: SoundControl
+    sources: [BetterSound]
     info:
       path: BetterSound/Info.plist
       properties:
@@ -35,6 +34,7 @@ targets:
         LSUIElement: true
         LSApplicationCategoryType: public.app-category.utilities
         NSAudioCaptureUsageDescription: BetterSound changes each app's volume as it plays. Nothing is recorded or saved.
+        CFBundleDevelopmentRegion: en
         CFBundleURLTypes:
           - CFBundleURLName: dev.adrbn.bettersound
             CFBundleURLSchemes: [bettersound]
@@ -43,20 +43,3 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: dev.adrbn.bettersound
         GENERATE_INFOPLIST_FILE: "NO"
 
-  SoundControl:
-    type: app-extension
-    platform: macOS
-    sources: [Widget, Shared]
-    info:
-      path: Widget/Info.plist
-      properties:
-        CFBundleDisplayName: BetterSound
-        NSExtension:
-          NSExtensionPointIdentifier: com.apple.widgetkit-extension
-    entitlements:
-      path: Widget/SoundControl.entitlements
-      properties:
-        com.apple.security.app-sandbox: true
-    settings:
-      base:
-        PRODUCT_BUNDLE_IDENTIFIER: dev.adrbn.bettersound.control

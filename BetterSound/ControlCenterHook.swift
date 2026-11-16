@@ -1,23 +1,17 @@
 import AppKit
 import ApplicationServices
-import SwiftUI
 
-/// Makes the BetterSound control in Control Center look and act like Apple's Sound module:
-/// while Control Center is open, a "Sound" tile with a live slider is drawn exactly over our
-/// control, and clicking it opens the mixer in place of Control Center.
-/// Needs Accessibility, used only to read Control Center's layout.
+/// Takes over Apple's Sound module in Control Center: a click on it (outside its slider)
+/// is swallowed and the mixer opens in Control Center's place. The slider keeps working.
+/// Needs Accessibility: to read Control Center's layout and to filter those clicks.
 @MainActor
 final class ControlCenterHook {
-    private let mixer: Mixer
-    private let openMixer: (NSRect) -> Void
-    private var tile: NSPanel?
-    private var poll: Timer?
-    private var clickMonitor: Any?
+    private let open: (NSRect) -> Void
+    private var tap: CFMachPort?
+    private var target: (module: CGRect, passthrough: [CGRect], panel: CGRect)?
+    private var swallowing = false
 
-    init(mixer: Mixer, openMixer: @escaping (NSRect) -> Void) {
-        self.mixer = mixer
-        self.openMixer = openMixer
-    }
+    init(open: @escaping (NSRect) -> Void) { self.open = open }
 
     static var isTrusted: Bool { AXIsProcessTrusted() }
 
@@ -26,98 +20,47 @@ final class ControlCenterHook {
     }
 
     func start() {
-        // Control Center opens on a click (menu bar item or keyboard shortcut is rare): look for it right after.
-        clickMonitor = NSEvent.addGlobalMonitorForEvents(matching: .leftMouseUp) { [weak self] _ in
-            MainActor.assumeIsolated { self?.watch() }
+        guard tap == nil, Self.isTrusted else { return }
+        let mask = CGEventMask(1 << CGEventType.leftMouseDown.rawValue) | CGEventMask(1 << CGEventType.leftMouseUp.rawValue)
+        tap = CGEvent.tapCreate(tap: .cgSessionEventTap, place: .headInsertEventTap, options: .defaultTap,
+                                eventsOfInterest: mask, callback: { _, type, event, ref in
+            let hook = Unmanaged<ControlCenterHook>.fromOpaque(ref!).takeUnretainedValue()
+            return MainActor.assumeIsolated { hook.handle(type, event) }
+        }, userInfo: Unmanaged.passUnretained(self).toOpaque())
+        guard let tap else { return }
+        CFRunLoopAddSource(CFRunLoopGetMain(), CFMachPortCreateRunLoopSource(nil, tap, 0), .commonModes)
+    }
+
+    private func handle(_ type: CGEventType, _ event: CGEvent) -> Unmanaged<CGEvent>? {
+        if type == .tapDisabledByTimeout || type == .tapDisabledByUserInput {
+            if let tap { CGEvent.tapEnable(tap: tap, enable: true) }
+            return Unmanaged.passUnretained(event)
         }
-    }
-
-    /// Track Control Center for a short while after each click; stop once it's closed.
-    private func watch() {
-        guard Self.isTrusted, poll == nil else { return }
-        poll = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
-            MainActor.assumeIsolated { self?.sync() }
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
-            if self?.tile == nil { self?.stopWatching() }
-        }
-    }
-
-    private func stopWatching() {
-        poll?.invalidate()
-        poll = nil
-        tile?.orderOut(nil)
-        tile = nil
-    }
-
-    private func sync() {
-        guard let cc = ControlCenterAX.openWindow(), let control = ControlCenterAX.ourControl(in: cc.element) else {
-            if tile != nil { stopWatching() }
-            return
-        }
-        let frame = control.cocoaFrame
-        let panel = tile ?? makeTile()
-        tile = panel
-        if panel.frame != frame { panel.setFrame(frame, display: true) }
-        (panel.contentView as? NSHostingView<SoundTile>)?.rootView.ccFrame = cc.cocoaFrame
-        panel.orderFrontRegardless()
-    }
-
-    private func makeTile() -> NSPanel {
-        let p = NSPanel(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: true)
-        p.level = .screenSaver
-        p.backgroundColor = .clear
-        p.hasShadow = false
-        p.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
-        p.contentView = NSHostingView(rootView: SoundTile(mixer: mixer, ccFrame: .zero) { [weak self] ccFrame in
-            self?.stopWatching()
-            self?.openMixer(ccFrame)
-        })
-        return p
-    }
-}
-
-/// Stand-in for Apple's Sound module: title opens the mixer, slider sets the master volume.
-struct SoundTile: View {
-    @ObservedObject var mixer: Mixer
-    var ccFrame: NSRect
-    var open: (NSRect) -> Void
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Text("Sound").font(.system(size: 13, weight: .semibold))
-                Spacer()
-                Image(systemName: "chevron.right").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
+        let p = event.location   // same top-left coordinates as AX
+        if type == .leftMouseDown {
+            target = ControlCenterAX.soundModule()
+            if let t = target, t.module.contains(p), !t.passthrough.contains(where: { $0.contains(p) }) {
+                swallowing = true
+                return nil
             }
-            .contentShape(Rectangle())
-            .onTapGesture { open(ccFrame) }
-            CapsuleSlider(value: mixer.master, leading: mixer.master == 0 ? "speaker.slash.fill" : "speaker.fill", height: 22) {
-                mixer.setMaster($0)
-            }
+        } else if swallowing {
+            swallowing = false
+            if let t = target { open(ControlCenterAX.cocoa(t.panel)) }
+            return nil
         }
-        .padding(.horizontal, 12)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .glassEffect(.regular, in: .rect(cornerRadius: 18))
+        return Unmanaged.passUnretained(event)
     }
 }
 
 // MARK: - Accessibility reading of Control Center
 
-struct AXNode {
-    let element: AXUIElement
-    let frame: CGRect   // AX coordinates: origin top-left of the primary screen
-
-    var cocoaFrame: NSRect {
-        let h = NSScreen.screens.first?.frame.height ?? 0
-        return NSRect(x: frame.minX, y: h - frame.maxY, width: frame.width, height: frame.height)
-    }
-}
-
 enum ControlCenterAX {
     static let bundleID = "com.apple.controlcenter"
-    /// Our control's AX label/identifier contains one of these.
-    static let markers = ["bettersound"]
+
+    static func cocoa(_ r: CGRect) -> NSRect {
+        let h = NSScreen.screens.first?.frame.height ?? 0
+        return NSRect(x: r.minX, y: h - r.maxY, width: r.width, height: r.height)
+    }
 
     static func attr(_ e: AXUIElement, _ name: String) -> AnyObject? {
         var v: AnyObject?
@@ -137,57 +80,69 @@ enum ControlCenterAX {
             .map { AXUIElementCreateApplication($0.processIdentifier) }
     }
 
-    /// The open Control Center panel (the biggest Control Center window that isn't the menu bar).
-    static func openWindow() -> AXNode? {
+    /// The open Control Center panel: the tallest Control Center window.
+    static func openWindow() -> (element: AXUIElement, frame: CGRect)? {
         guard let app else { return nil }
-        let windows = (attr(app, kAXWindowsAttribute) as? [AXUIElement]) ?? []
-        return windows.compactMap { w in frame(w).map { AXNode(element: w, frame: $0) } }
-            .filter { $0.frame.height > 100 }
-            .max { $0.frame.height < $1.frame.height }
+        return ((attr(app, kAXWindowsAttribute) as? [AXUIElement]) ?? [])
+            .compactMap { w in frame(w).map { (w, $0) } }
+            .filter { $0.1.height > 100 }
+            .max { $0.1.height < $1.1.height }
     }
 
-    static func ourControl(in root: AXUIElement) -> AXNode? {
-        var found: AXNode?
-        walk(root, depth: 0) { e in
-            let text = [kAXDescriptionAttribute, kAXTitleAttribute, kAXIdentifierAttribute, kAXHelpAttribute]
-                .compactMap { attr(e, $0) as? String }.joined(separator: " ").lowercased()
-            guard markers.contains(where: text.contains), let f = frame(e) else { return false }
-            found = AXNode(element: e, frame: f)
-            return true
+    /// Apple's Sound module, found by Control Center's own identifiers. The tile has no AX
+    /// element of its own, so its frame is the title, slider and AirPlay button plus padding.
+    /// `passthrough` are the parts that keep Apple's behaviour (slider, AirPlay).
+    static func soundModule() -> (module: CGRect, passthrough: [CGRect], panel: CGRect)? {
+        guard let win = openWindow() else { return nil }
+        var found: [String: CGRect] = [:]
+        var content = CGRect.null
+        let ids = ["controlcenter-volume", "controlcenter-volume-slider", "controlcenter-airplay"]
+        walk(win.element, parent: nil, depth: 0) { e, _ in
+            if let id = attr(e, kAXIdentifierAttribute) as? String, ids.contains(id), let f = frame(e) { found[id] = f }
+            if let id = attr(e, kAXIdentifierAttribute) as? String, id.hasPrefix("controlcenter-"), let f = frame(e) {
+                content = content.union(f)
+            }
+            return false
         }
-        return found
+        guard let title = found["controlcenter-volume"], let slider = found["controlcenter-volume-slider"] else { return nil }
+        let parts = [title, slider, found["controlcenter-airplay"]].compactMap { $0 }
+        let tile = parts.reduce(CGRect.null) { $0.union($1) }.insetBy(dx: -14, dy: -12)
+        let pass = [slider.insetBy(dx: -4, dy: -8)] + [found["controlcenter-airplay"]].compactMap { $0 }
+        // The visible Control Center panel: its controls plus the margin around them.
+        return (tile, pass, content.insetBy(dx: -14, dy: -14))
     }
 
     /// Depth-first; stops when `visit` returns true.
     @discardableResult
-    static func walk(_ e: AXUIElement, depth: Int, _ visit: (AXUIElement) -> Bool) -> Bool {
-        if visit(e) { return true }
-        guard depth < 12 else { return false }
-        for c in (attr(e, kAXChildrenAttribute) as? [AXUIElement]) ?? [] where walk(c, depth: depth + 1, visit) {
+    static func walk(_ e: AXUIElement, parent: AXUIElement?, depth: Int,
+                     _ visit: (AXUIElement, AXUIElement?) -> Bool) -> Bool {
+        if visit(e, parent) { return true }
+        guard depth < 14 else { return false }
+        for c in (attr(e, kAXChildrenAttribute) as? [AXUIElement]) ?? [] where walk(c, parent: e, depth: depth + 1, visit) {
             return true
         }
         return false
     }
 
-    /// Debug: `BetterSound --dump-cc` opens Control Center and writes its AX tree to /tmp/bettersound-cc.txt.
-    static func dump() {
-        guard let app else { return }
-        if let bar = attr(app, kAXExtrasMenuBarAttribute) {
-            for c in (attr(bar as! AXUIElement, kAXChildrenAttribute) as? [AXUIElement]) ?? []
-            where (attr(c, kAXIdentifierAttribute) as? String) == "com.apple.menuextra.controlcenter" {
-                AXUIElementPerformAction(c, kAXPressAction as CFString)
-            }
+    /// Debug: `BetterSound --dump-cc` waits (up to 2 min) for Control Center to open, then writes
+    /// its AX tree to /tmp/bettersound-cc.txt.
+    @MainActor
+    static func dump(tries: Int = 600) {
+        guard tries > 0 else { return }
+        guard let w = openWindow() else {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { dump(tries: tries - 1) }
+            return
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-            var out = "trusted: \(AXIsProcessTrusted())\n"
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            var out = ""
             func line(_ e: AXUIElement, _ d: Int) {
-                let keys = [kAXRoleAttribute, kAXSubroleAttribute, kAXDescriptionAttribute, kAXTitleAttribute, kAXIdentifierAttribute]
+                let keys = [kAXRoleAttribute, kAXSubroleAttribute, kAXDescriptionAttribute, kAXTitleAttribute, kAXIdentifierAttribute, kAXHelpAttribute]
                 let vals = keys.map { (attr(e, $0) as? String) ?? "" }.joined(separator: " | ")
                 out += String(repeating: "  ", count: d) + vals + " \(frame(e).map { "\($0)" } ?? "")\n"
-                guard d < 12 else { return }
+                guard d < 14 else { return }
                 for c in (attr(e, kAXChildrenAttribute) as? [AXUIElement]) ?? [] { line(c, d + 1) }
             }
-            for w in (attr(app, kAXWindowsAttribute) as? [AXUIElement]) ?? [] { line(w, 0) }
+            line(w.element, 0)
             try? out.write(toFile: "/tmp/bettersound-cc.txt", atomically: true, encoding: .utf8)
         }
     }

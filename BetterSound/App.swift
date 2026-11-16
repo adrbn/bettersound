@@ -23,32 +23,53 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ note: Notification) {
         AppDelegate.shared = self
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        statusItem.button?.image = NSImage(systemSymbolName: "slider.horizontal.3", accessibilityDescription: "BetterSound")
+        updateIcon()
         statusItem.button?.target = self
         statusItem.button?.action = #selector(statusClicked)
         statusItem.button?.sendAction(on: [.leftMouseUp, .rightMouseUp])
 
-        panel = NSPanel(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: true)
+        panel = KeyPanel(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: true)
         panel.isFloatingPanel = true
         panel.level = .screenSaver
         panel.backgroundColor = .clear
+        panel.isOpaque = false
         panel.hasShadow = true
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         panel.contentView = NSHostingView(rootView: MixerView(mixer: mixer))
 
         // Rows come and go: keep the panel's top edge pinned while its height follows the content.
         resize = mixer.objectWillChange.receive(on: RunLoop.main).sink { [weak self] _ in
-            MainActor.assumeIsolated { self?.fitHeight() }
+            MainActor.assumeIsolated { self?.fitHeight(); self?.updateIcon() }
         }
-        NotificationCenter.default.addObserver(forName: .showBetterSound, object: nil, queue: .main) { [weak self] _ in
-            MainActor.assumeIsolated { self?.toggle(below: nil) }
-        }
-        hook = ControlCenterHook(mixer: mixer) { [weak self] ccFrame in self?.show(over: ccFrame) }
+        hook = ControlCenterHook { [weak self] ccFrame in self?.show(over: ccFrame) }
         hook?.start()
         if !ControlCenterHook.isTrusted { ControlCenterHook.requestTrust() }
+        AppleSoundItem.hide()
 
         if CommandLine.arguments.contains("--show") { show(below: nil) }
         if CommandLine.arguments.contains("--dump-cc") { ControlCenterAX.dump() }
+        if CommandLine.arguments.contains("--diag") {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [mixer] in
+                let procs = Audio.processes().map { "\($0.pid)->\(Audio.responsiblePID($0.pid)) playing=\($0.isPlaying)" }
+                let text = "permission: \(AudioPermission.status)\napps: \(mixer.apps.map(\.id))\n\(mixer.debugState)\nprocs: \(procs)\n"
+                try? text.write(toFile: "/tmp/bettersound-diag.txt", atomically: true, encoding: .utf8)
+            }
+        }
+    }
+
+    func applicationWillTerminate(_ note: Notification) {
+        AppleSoundItem.restore()
+    }
+
+    /// Same icon as Apple's Sound item: the output device, or a speaker showing the level.
+    private func updateIcon() {
+        DispatchQueue.main.async { [self] in
+            let name = mixer.menuBarSymbol
+            guard statusItem.button?.image?.accessibilityDescription != name else { return }
+            let img = NSImage(systemSymbolName: name, accessibilityDescription: name)
+            img?.isTemplate = true
+            statusItem.button?.image = img
+        }
     }
 
     func application(_ app: NSApplication, open urls: [URL]) {
@@ -65,7 +86,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func statusClicked() {
         if NSApp.currentEvent?.type == .rightMouseUp {
             let menu = NSMenu()
-            menu.addItem(withTitle: "Quit BetterSound", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+            menu.addItem(withTitle: String(localized: "Quit BetterSound"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
             statusItem.menu = menu
             statusItem.button?.performClick(nil)
             statusItem.menu = nil
@@ -74,7 +95,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    /// From the Control Center control (no anchor): open where Control Center opens, top right.
     func toggle(below anchor: NSWindow?) {
         panel.isVisible ? hide() : show(below: anchor)
     }
@@ -85,17 +105,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let screen = anchor?.screen ?? NSScreen.main ?? NSScreen.screens[0]
         let visible = screen.visibleFrame
         var x = visible.maxX - size.width - 10
-        if let anchor { x = min(max(anchor.frame.midX - size.width / 2, visible.minX + 10), x) }
-        topY = visible.maxY - 6
+        // Like a menu: left edge under the menu bar icon.
+        if let anchor { x = min(max(anchor.frame.minX - 6, visible.minX + 6), visible.maxX - size.width - 6) }
+        topY = visible.maxY - 4
         panel.setFrame(NSRect(x: x, y: topY - size.height, width: size.width, height: size.height), display: true)
         panel.orderFrontRegardless()
+        panel.makeKey()   // active look: sliders filled with the accent colour
 
         outsideClick = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
             MainActor.assumeIsolated { self?.hide() }
         }
     }
 
-    /// Opened from the Control Center tile: take Control Center's place, like Apple's Sound view does.
+    /// Opened from Control Center's Sound module: take Control Center's place, like Apple's Sound view.
     private func show(over ccFrame: NSRect) {
         show(below: nil)
         let size = panel.frame.size
@@ -115,4 +137,47 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         if let outsideClick { NSEvent.removeMonitor(outsideClick) }
         outsideClick = nil
     }
+}
+
+/// Hides Apple's Sound menu bar item while BetterSound runs (its own item replaces it), restores it on quit.
+enum AppleSoundItem {
+    private static let saved = "appleSoundVisibility"
+
+    static func hide() {
+        let current = run("read", "Sound").trimmingCharacters(in: .whitespacesAndNewlines)
+        guard current != "8" else { return }
+        UserDefaults.standard.set(current.isEmpty ? "18" : current, forKey: saved)
+        run("write", "Sound", "-int", "8")
+        reloadControlCenter()
+    }
+
+    static func restore() {
+        guard let value = UserDefaults.standard.string(forKey: saved) else { return }
+        run("write", "Sound", "-int", value)
+        UserDefaults.standard.removeObject(forKey: saved)
+        reloadControlCenter()
+    }
+
+    @discardableResult
+    private static func run(_ args: String...) -> String {
+        let p = Process()
+        p.executableURL = URL(fileURLWithPath: "/usr/bin/defaults")
+        p.arguments = ["-currentHost", args[0], "com.apple.controlcenter"] + args.dropFirst()
+        let pipe = Pipe()
+        p.standardOutput = pipe
+        p.standardError = FileHandle.nullDevice
+        try? p.run()
+        p.waitUntilExit()
+        return String(decoding: pipe.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self)
+    }
+
+    /// Control Center reads this setting at launch; it relaunches itself right away.
+    private static func reloadControlCenter() {
+        NSRunningApplication.runningApplications(withBundleIdentifier: ControlCenterAX.bundleID).forEach { $0.terminate() }
+    }
+}
+
+/// A non-activating panel that still becomes key, so its controls draw in their active state.
+final class KeyPanel: NSPanel {
+    override var canBecomeKey: Bool { true }
 }
