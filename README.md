@@ -14,7 +14,7 @@ BetterSound replaces the Sound item in the macOS menu bar and in Control Center,
   <a href="https://github.com/adrbn/bettersound/releases/latest/download/BetterSound.dmg"><img src="docs/assets/btn-download.svg" height="48" alt="Download for macOS 26"></a>
   <a href="#features"><img src="docs/assets/btn-features.svg" height="48" alt="Features"></a>
   <a href="#how-it-works"><img src="docs/assets/btn-how.svg" height="48" alt="How it works"></a>
-  <a href="https://github.com/adrbn/bettersound"><img src="docs/assets/btn-github.svg" height="48" alt="Star on GitHub"></a>
+  <a href="https://ko-fi.com/adrbn"><img src="docs/assets/btn-kofi.svg" height="48" alt="Buy me a coffee on Ko-fi"></a>
 </p>
 
 <p align="center">
@@ -106,11 +106,10 @@ BetterSound reads audio only to change its volume and play it back. Nothing is r
 
 ## Support
 
-BetterSound is free. If it saves you a menu, you can buy me a coffee or star the repo.
+BetterSound is free. If it saves you a menu, you can buy me a coffee.
 
 <p>
   <a href="https://ko-fi.com/adrbn"><img src="docs/assets/btn-kofi.svg" height="48" alt="Buy me a coffee on Ko-fi"></a>
-  <a href="https://github.com/adrbn/bettersound"><img src="docs/assets/btn-github.svg" height="48" alt="Star on GitHub"></a>
 </p>
 
 ## License

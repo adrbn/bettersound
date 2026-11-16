@@ -14,7 +14,7 @@ BetterSound remplace l'élément Son de la barre des menus et du Centre de contr
   <a href="https://github.com/adrbn/bettersound/releases/latest/download/BetterSound.dmg"><img src="docs/assets/btn-download-fr.svg" height="48" alt="Télécharger pour macOS 26"></a>
   <a href="#fonctions"><img src="docs/assets/btn-features-fr.svg" height="48" alt="Fonctions"></a>
   <a href="#comment-ça-marche"><img src="docs/assets/btn-how-fr.svg" height="48" alt="Comment ça marche"></a>
-  <a href="https://github.com/adrbn/bettersound"><img src="docs/assets/btn-github-fr.svg" height="48" alt="Étoile sur GitHub"></a>
+  <a href="https://ko-fi.com/adrbn"><img src="docs/assets/btn-kofi-fr.svg" height="48" alt="Offrir un café sur Ko-fi"></a>
 </p>
 
 <p align="center">
@@ -106,11 +106,10 @@ BetterSound lit l'audio seulement pour en changer le volume et le rejouer. Rien 
 
 ## Soutenir
 
-BetterSound est gratuit. S'il vous sert, vous pouvez m'offrir un café ou mettre une étoile au dépôt.
+BetterSound est gratuit. S'il vous sert, vous pouvez m'offrir un café.
 
 <p>
   <a href="https://ko-fi.com/adrbn"><img src="docs/assets/btn-kofi-fr.svg" height="48" alt="Offrir un café sur Ko-fi"></a>
-  <a href="https://github.com/adrbn/bettersound"><img src="docs/assets/btn-github-fr.svg" height="48" alt="Étoile sur GitHub"></a>
 </p>
 
 ## Licence

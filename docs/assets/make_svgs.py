@@ -186,7 +186,6 @@ ICONS = {
     "download": '<path d="M0 -9V5M-5 0L0 5L5 0M-8 9H8" stroke="CUR"/>',
     "features": '<path d="M-8 -5H8M-8 0H8M-8 5H8" stroke="CUR"/><circle cx="3" cy="-5" r="2.4" fill="CUR" stroke="CUR"/><circle cx="-3" cy="0" r="2.4" fill="CUR" stroke="CUR"/><circle cx="5" cy="5" r="2.4" fill="CUR" stroke="CUR"/>',
     "how": '<circle r="8" stroke="CUR"/><path d="M0 -1V5M0 -4.5V-4" stroke="CUR"/>',
-    "github": '<path d="M0 -9A9 9 0 0 0 -2.8 8.5C-2.3 8.6 -2.2 8.3 -2.2 8V6.4C-4.7 6.9 -5.2 5.2 -5.2 5.2C-5.6 4.2 -6.2 3.9 -6.2 3.9C-7 3.3 -6.1 3.3 -6.1 3.3C-5.2 3.4 -4.7 4.2 -4.7 4.2C-3.9 5.6 -2.6 5.2 -2.1 5C-2 4.4 -1.8 4 -1.5 3.8C-3.5 3.6 -5.6 2.8 -5.6 -0.6C-5.6 -1.6 -5.2 -2.4 -4.7 -3C-4.8 -3.2 -5.1 -4.2 -4.6 -5.4C-4.6 -5.4 -3.8 -5.6 -2.2 -4.5A8 8 0 0 1 2.2 -4.5C3.8 -5.6 4.6 -5.4 4.6 -5.4C5.1 -4.2 4.8 -3.2 4.7 -3C5.2 -2.4 5.6 -1.6 5.6 -0.6C5.6 2.8 3.5 3.6 1.5 3.8C1.8 4.1 2.1 4.6 2.1 5.4V8C2.1 8.3 2.3 8.6 2.8 8.5A9 9 0 0 0 0 -9Z" fill="CUR" stroke="none"/>',
     "kofi": '<path d="M-9 -4H5V3A6 6 0 0 1 -1 9H-3A6 6 0 0 1 -9 3Z" stroke="CUR"/><path d="M5 -1.5H7A3 3 0 0 1 7 4.5H5" stroke="CUR"/><path d="M-4 -8Q-2.5 -9.5 -4 -11M0 -8Q1.5 -9.5 0 -11" stroke="CUR"/>',
 }
 
@@ -194,12 +193,10 @@ PILLS = {
     "en": [("btn-download.svg", "Download", "for macOS 26", "download", True),
            ("btn-features.svg", "Features", "", "features", False),
            ("btn-how.svg", "How it works", "", "how", False),
-           ("btn-github.svg", "Star on GitHub", "", "github", False),
            ("btn-kofi.svg", "Buy me a coffee", "Tip the dev on Ko-fi", "kofi", False)],
     "fr": [("btn-download-fr.svg", "Télécharger", "pour macOS 26", "download", True),
            ("btn-features-fr.svg", "Fonctions", "", "features", False),
            ("btn-how-fr.svg", "Comment ça marche", "", "how", False),
-           ("btn-github-fr.svg", "Une étoile sur GitHub", "", "github", False),
            ("btn-kofi-fr.svg", "Offrir un café", "Soutenir sur Ko-fi", "kofi", False)],
 }
 
