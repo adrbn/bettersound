@@ -1,9 +1,11 @@
-<picture>
+<p align="center"><picture>
   <source media="(prefers-color-scheme: light)" srcset="docs/assets/hero-light.svg">
-  <img src="docs/assets/hero.svg" width="100%" alt="BetterSound open from the macOS menu bar: the system volume, a volume slider for each app that is playing (the sliders move between three real states), the outputs with the AirPods battery at 68 %, and Sound Settings.">
-</picture>
+  <img src="docs/assets/hero.svg" width="520" alt="BetterSound open from the macOS menu bar: the system volume, a volume slider for each app that is playing (the sliders move between three real states), the outputs with the AirPods battery at 68 %, and Sound Settings.">
+</picture></p>
 
 <p align="center"><img src="docs/icon.png" width="96" alt="BetterSound icon"></p>
+
+<h1 align="center">BetterSound</h1>
 
 <p align="center"><b>A volume slider for every app, right inside Apple's Sound menu.</b><br>
 BetterSound replaces the Sound item in the macOS menu bar and in Control Center, looks the same, and adds per-app volume, mute and output.</p>

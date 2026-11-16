@@ -1,9 +1,11 @@
-<picture>
+<p align="center"><picture>
   <source media="(prefers-color-scheme: light)" srcset="docs/assets/hero-light.svg">
-  <img src="docs/assets/hero.svg" width="100%" alt="BetterSound ouvert depuis la barre des menus de macOS : le volume du système, un curseur de volume pour chaque app qui joue (les curseurs passent par trois états réels), les sorties avec la batterie des AirPods à 68 %, et Réglages Son.">
-</picture>
+  <img src="docs/assets/hero.svg" width="520" alt="BetterSound ouvert depuis la barre des menus de macOS : le volume du système, un curseur de volume pour chaque app qui joue (les curseurs passent par trois états réels), les sorties avec la batterie des AirPods à 68 %, et Réglages Son.">
+</picture></p>
 
 <p align="center"><img src="docs/icon.png" width="96" alt="Icône de BetterSound"></p>
+
+<h1 align="center">BetterSound</h1>
 
 <p align="center"><b>Un curseur de volume pour chaque app, dans le menu Son d'Apple.</b><br>
 BetterSound remplace l'élément Son de la barre des menus et du Centre de contrôle, garde son apparence, et ajoute le volume, la sourdine et la sortie par app.</p>
