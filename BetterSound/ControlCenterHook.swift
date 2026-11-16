@@ -38,6 +38,12 @@ final class ControlCenterHook {
         }
         let p = event.location   // same top-left coordinates as AX
         if type == .leftMouseDown {
+            // Our panel opens over Control Center's Sound tile: clicks on it are ours.
+            let mouse = NSEvent.mouseLocation
+            if NSApp.windows.contains(where: { $0.isVisible && $0.frame.contains(mouse) }) {
+                target = nil
+                return Unmanaged.passUnretained(event)
+            }
             target = ControlCenterAX.soundModule()
             if let t = target, t.module.contains(p), !t.passthrough.contains(where: { $0.contains(p) }) {
                 swallowing = true
