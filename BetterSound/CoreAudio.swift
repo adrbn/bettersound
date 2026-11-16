@@ -1,3 +1,4 @@
+import AppKit
 import AudioToolbox
 import CoreAudio
 import Foundation
@@ -145,5 +146,19 @@ extension Audio {
     static func responsiblePID(_ pid: pid_t) -> pid_t {
         let r = responsibility_get_pid_responsible_for_pid(pid)
         return r > 0 ? r : pid
+    }
+
+    /// The app a process belongs to: its responsible process, or the first ancestor that is an app
+    /// (CLI tools and helpers launched by an app, e.g. a binary inside Claude.app).
+    static func owningApp(_ pid: pid_t) -> NSRunningApplication? {
+        var p = responsiblePID(pid)
+        for _ in 0..<8 where p > 1 {
+            if let app = NSRunningApplication(processIdentifier: p), app.bundleIdentifier != nil { return app }
+            var info = kinfo_proc(), size = MemoryLayout<kinfo_proc>.size
+            var mib: [Int32] = [CTL_KERN, KERN_PROC, KERN_PROC_PID, p]
+            guard sysctl(&mib, 4, &info, &size, nil, 0) == 0 else { return nil }
+            p = info.kp_eproc.e_ppid
+        }
+        return nil
     }
 }

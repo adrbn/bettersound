@@ -1,5 +1,6 @@
 import AppKit
 import Combine
+import ServiceManagement
 import SwiftUI
 
 @main
@@ -22,7 +23,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ note: Notification) {
         AppDelegate.shared = self
+        // First launch: take Apple's Sound slot in the menu bar (its own preferred position), and open at login.
+        let slot = "NSStatusItem Preferred Position BetterSound"
+        if UserDefaults.standard.object(forKey: slot) == nil {
+            let apple = UserDefaults(suiteName: "com.apple.controlcenter")?.object(forKey: "NSStatusItem Preferred Position Sound")
+            UserDefaults.standard.set(apple ?? 380, forKey: slot)
+            try? SMAppService.mainApp.register()
+        }
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
+        statusItem.autosaveName = "BetterSound"
         updateIcon()
         statusItem.button?.target = self
         statusItem.button?.action = #selector(statusClicked)
@@ -53,9 +62,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         if CommandLine.arguments.contains("--show") { show(below: nil) }
         if CommandLine.arguments.contains("--dump-cc") { ControlCenterAX.dump() }
+        if CommandLine.arguments.contains("--extras") {
+            // Debug: list Control Center's menu bar items and where ours sits.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) { [self] in
+                var out = "ours: \(statusItem.button?.window?.frame ?? .zero) visible=\(statusItem.isVisible)\n"
+                if let app = ControlCenterAX.app, let bar = ControlCenterAX.attr(app, kAXExtrasMenuBarAttribute) {
+                    for c in (ControlCenterAX.attr(bar as! AXUIElement, kAXChildrenAttribute) as? [AXUIElement]) ?? [] {
+                        out += "\((ControlCenterAX.attr(c, kAXIdentifierAttribute) as? String) ?? "") \(ControlCenterAX.frame(c) ?? .zero)\n"
+                    }
+                }
+                try? out.write(toFile: "/tmp/bettersound-extras.txt", atomically: true, encoding: .utf8)
+            }
+        }
         if CommandLine.arguments.contains("--diag") {
             DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [mixer] in
-                let procs = Audio.processes().map { "\($0.pid)->\(Audio.responsiblePID($0.pid)) playing=\($0.isPlaying)" }
+                let procs = Audio.processes().map { "\($0.pid)->\(Audio.owningApp($0.pid)?.bundleIdentifier ?? "nil") playing=\($0.isPlaying)" }
                 let text = "permission: \(AudioPermission.status)\napps: \(mixer.apps.map(\.id))\n\(mixer.debugState)\nprocs: \(procs)\n"
                 try? text.write(toFile: "/tmp/bettersound-diag.txt", atomically: true, encoding: .utf8)
             }
@@ -91,6 +112,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func statusClicked() {
         if NSApp.currentEvent?.type == .rightMouseUp {
             let menu = NSMenu()
+            let login = menu.addItem(withTitle: String(localized: "Open at Login"), action: #selector(toggleLogin), keyEquivalent: "")
+            login.target = self
+            login.state = SMAppService.mainApp.status == .enabled ? .on : .off
+            menu.addItem(.separator())
             menu.addItem(withTitle: String(localized: "Quit BetterSound"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
             statusItem.menu = menu
             statusItem.button?.performClick(nil)
@@ -98,6 +123,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         } else {
             toggle(below: statusItem.button?.window)
         }
+    }
+
+    @objc private func toggleLogin() {
+        let app = SMAppService.mainApp
+        try? app.status == .enabled ? app.unregister() : app.register()
     }
 
     func toggle(below anchor: NSWindow?) {
@@ -112,7 +142,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         var x = visible.maxX - size.width - 10
         // Like a menu: left edge under the menu bar icon.
         if let anchor { x = min(max(anchor.frame.minX - 6, visible.minX + 6), visible.maxX - size.width - 6) }
-        topY = visible.maxY - 4
+        // Just under the menu bar, even when a full-screen app hides it.
+        topY = screen.frame.maxY - NSStatusBar.system.thickness - 6
         panel.setFrame(NSRect(x: x, y: topY - size.height, width: size.width, height: size.height), display: true)
         panel.orderFrontRegardless()
         panel.makeKey()   // active look: sliders filled with the accent colour

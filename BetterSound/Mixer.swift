@@ -112,9 +112,8 @@ final class Mixer: ObservableObject {
         var byApp: [String: AppRow] = [:]
         var playing = Set<String>()
         for p in Audio.processes() where p.pid > 0 && p.pid != me {
-            let owner = Audio.responsiblePID(p.pid)
-            guard owner != me, let app = NSRunningApplication(processIdentifier: owner) else { continue }
-            let id = app.bundleIdentifier ?? "pid:\(owner)"
+            guard let app = Audio.owningApp(p.pid), app.processIdentifier != me else { continue }
+            let id = app.bundleIdentifier ?? "pid:\(app.processIdentifier)"
             byApp[id, default: AppRow(id: id,
                                       name: app.localizedName ?? id,
                                       icon: app.icon ?? NSImage(),
