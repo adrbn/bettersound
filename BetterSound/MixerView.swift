@@ -21,9 +21,14 @@ struct MixerView: View {
             if mixer.permission != .granted {
                 separator
                 permissionRow
-            } else if !mixer.apps.isEmpty {
+            } else {
                 separator
                 header("Apps")
+                if mixer.apps.isEmpty {
+                    Text("No app is playing sound")
+                        .font(.system(size: 13)).foregroundStyle(.tertiary)
+                        .padding(.horizontal, 14).padding(.bottom, 4)
+                }
                 ForEach(mixer.apps) { appRow($0) }
                     .padding(.horizontal, 14).padding(.vertical, 3)
                 Spacer().frame(height: 6)

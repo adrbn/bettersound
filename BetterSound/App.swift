@@ -35,7 +35,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         panel.isOpaque = false
         panel.hasShadow = true
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
-        panel.contentView = NSHostingView(rootView: MixerView(mixer: mixer))
+        let host = NSHostingView(rootView: MixerView(mixer: mixer))
+        // Round the window itself, or its shadow and backing show square corners.
+        host.wantsLayer = true
+        host.layer?.cornerRadius = 14
+        host.layer?.masksToBounds = true
+        panel.contentView = host
 
         // Rows come and go: keep the panel's top edge pinned while its height follows the content.
         resize = mixer.objectWillChange.receive(on: RunLoop.main).sink { [weak self] _ in
@@ -111,6 +116,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         panel.setFrame(NSRect(x: x, y: topY - size.height, width: size.width, height: size.height), display: true)
         panel.orderFrontRegardless()
         panel.makeKey()   // active look: sliders filled with the accent colour
+        panel.invalidateShadow()
 
         outsideClick = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
             MainActor.assumeIsolated { self?.hide() }
@@ -130,6 +136,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let size = panel.contentView!.fittingSize
         guard size.height != panel.frame.height else { return }
         panel.setFrame(NSRect(x: panel.frame.minX, y: topY - size.height, width: size.width, height: size.height), display: true)
+        panel.invalidateShadow()
     }
 
     private func hide() {

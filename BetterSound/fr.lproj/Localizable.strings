@@ -6,3 +6,4 @@
 "Allow" = "Autoriser";
 "Per-app volume needs access to system audio. Nothing is recorded." = "Le volume par app a besoin d’accéder à l’audio du système. Rien n’est enregistré.";
 "Quit BetterSound" = "Quitter BetterSound";
+"No app is playing sound" = "Aucune app ne joue de son";
