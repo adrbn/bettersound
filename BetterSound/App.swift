@@ -140,6 +140,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func show(below anchor: NSWindow?) {
         mixer.refresh()
+        mixer.refreshBattery()
         let size = panel.contentView!.fittingSize
         let screen = anchor?.screen ?? NSScreen.main ?? NSScreen.screens[0]
         let visible = screen.visibleFrame

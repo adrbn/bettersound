@@ -37,7 +37,7 @@ struct MixerView: View {
             separator
             header("Output")
             ForEach(mixer.devices) { device in
-                DeviceRow(device: device, selected: device.id == mixer.defaultDeviceID) {
+                DeviceRow(device: device, selected: device.id == mixer.defaultDeviceID, battery: mixer.battery[device.uid]) {
                     mixer.selectDefault(device)
                 }
             }
@@ -137,6 +137,7 @@ extension MenuRow where Label == Text {
 private struct DeviceRow: View {
     let device: OutputDevice
     let selected: Bool
+    let battery: Int?
     let action: () -> Void
 
     var body: some View {
@@ -148,6 +149,10 @@ private struct DeviceRow: View {
                     .background(Circle().fill(selected ? Color.accentColor : Color.primary.opacity(0.1)))
                     .foregroundStyle(selected ? .white : .primary)
                 Text(device.name).font(.system(size: 13)).lineLimit(1)
+                if let battery {
+                    Spacer(minLength: 6)
+                    Text("\(battery) %").font(.system(size: 12)).foregroundStyle(.secondary).monospacedDigit()
+                }
             }
         }
     }

@@ -17,6 +17,8 @@ final class Mixer: ObservableObject {
     @Published var master: Float = 0
     @Published private(set) var hasMaster = true
     @Published private(set) var permission = AudioPermission.status
+    /// Bluetooth battery in %, by device UID. Read when the panel opens.
+    @Published private(set) var battery: [String: Int] = [:]
 
     @Published private var volumes: [String: Float]   // slider position 0...1, persisted
     @Published private var muted: Set<String>
@@ -82,6 +84,32 @@ final class Mixer: ObservableObject {
         taps = [:]   // gone before the switch, or macOS switches back to the device it plays on
         Audio.defaultOutput = device.id
         refresh()
+    }
+
+    /// Bluetooth battery from system_profiler (no Bluetooth permission needed, ~0.3 s): the lower
+    /// of both earbuds, else the device's single level. Bluetooth audio UIDs are the address with dashes.
+    func refreshBattery() {
+        Task.detached {
+            let p = Process()
+            p.executableURL = URL(fileURLWithPath: "/usr/sbin/system_profiler")
+            p.arguments = ["SPBluetoothDataType", "-json"]
+            let pipe = Pipe()
+            p.standardOutput = pipe
+            guard (try? p.run()) != nil else { return }
+            let data = pipe.fileHandleForReading.readDataToEndOfFile()
+            let root = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any]
+            let connected = ((root?["SPBluetoothDataType"] as? [[String: Any]])?.first?["device_connected"] as? [[String: Any]]) ?? []
+            var levels: [String: Int] = [:]
+            for entry in connected {
+                for case let info as [String: Any] in entry.values {
+                    guard let address = info["device_address"] as? String else { continue }
+                    let values = ["device_batteryLevelLeft", "device_batteryLevelRight", "device_batteryLevelMain"]
+                        .compactMap { (info[$0] as? String).flatMap { Int($0.filter(\.isNumber)) } }
+                    if let low = values.min() { levels[address.replacingOccurrences(of: ":", with: "-") + ":output"] = low }
+                }
+            }
+            await MainActor.run { [levels] in self.battery = levels }
+        }
     }
 
     func requestPermission() {
