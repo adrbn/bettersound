@@ -1,0 +1,13 @@
+"Sound" = "Ήχος";
+"Output" = "Έξοδος";
+"Sound Settings…" = "Ρυθμίσεις ήχου…";
+"Apps" = "Εφαρμογές";
+"System Output" = "Έξοδος συστήματος";
+"Allow" = "Να επιτρέπεται";
+"Per-app volume needs access to system audio. Nothing is recorded." = "Η ένταση ανά εφαρμογή χρειάζεται πρόσβαση στον ήχο του συστήματος. Δεν καταγράφεται τίποτα.";
+"Quit BetterSound" = "Τερματισμός BetterSound";
+"No app is playing sound" = "Καμία εφαρμογή δεν αναπαράγει ήχο";
+"Open at Login" = "Άνοιγμα κατά τη σύνδεση";
+"Check for Updates…" = "Έλεγχος για ενημερώσεις…";
+"BetterSound on GitHub" = "Το BetterSound στο GitHub";
+"Support on Ko-fi" = "Υποστήριξη στο Ko-fi";

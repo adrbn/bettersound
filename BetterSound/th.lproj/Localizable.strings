@@ -1,0 +1,13 @@
+"Sound" = "เสียง";
+"Output" = "สัญญาณออก";
+"Sound Settings…" = "การตั้งค่าเสียง…";
+"Apps" = "แอป";
+"System Output" = "สัญญาณออกของระบบ";
+"Allow" = "อนุญาต";
+"Per-app volume needs access to system audio. Nothing is recorded." = "การปรับเสียงแยกตามแอปต้องเข้าถึงเสียงของระบบ ไม่มีการบันทึกใดๆ";
+"Quit BetterSound" = "ออกจาก BetterSound";
+"No app is playing sound" = "ไม่มีแอปที่กำลังเล่นเสียง";
+"Open at Login" = "เปิดเมื่อเข้าสู่ระบบ";
+"Check for Updates…" = "ตรวจหารายการอัปเดต…";
+"BetterSound on GitHub" = "BetterSound บน GitHub";
+"Support on Ko-fi" = "สนับสนุนบน Ko-fi";

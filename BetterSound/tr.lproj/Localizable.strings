@@ -1,0 +1,13 @@
+"Sound" = "Ses";
+"Output" = "Çıkış";
+"Sound Settings…" = "Ses Ayarları…";
+"Apps" = "Uygulamalar";
+"System Output" = "Sistem Çıkışı";
+"Allow" = "İzin Ver";
+"Per-app volume needs access to system audio. Nothing is recorded." = "Uygulama başına ses düzeyi için sistem sesine erişim gerekir. Hiçbir şey kaydedilmez.";
+"Quit BetterSound" = "BetterSound’dan Çık";
+"No app is playing sound" = "Ses çalan uygulama yok";
+"Open at Login" = "Girişte Aç";
+"Check for Updates…" = "Güncellemeleri Denetle…";
+"BetterSound on GitHub" = "GitHub’da BetterSound";
+"Support on Ko-fi" = "Ko-fi’da Destek Ol";

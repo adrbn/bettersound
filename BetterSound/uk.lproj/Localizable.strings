@@ -1,0 +1,13 @@
+"Sound" = "Звук";
+"Output" = "Вихід";
+"Sound Settings…" = "Параметри звуку…";
+"Apps" = "Програми";
+"System Output" = "Системний вихід";
+"Allow" = "Дозволити";
+"Per-app volume needs access to system audio. Nothing is recorded." = "Для гучності окремих програм потрібен доступ до системного звуку. Нічого не записується.";
+"Quit BetterSound" = "Вийти з BetterSound";
+"No app is playing sound" = "Жодна програма не відтворює звук";
+"Open at Login" = "Відкривати під час входу";
+"Check for Updates…" = "Перевірити оновлення…";
+"BetterSound on GitHub" = "BetterSound на GitHub";
+"Support on Ko-fi" = "Підтримати на Ko-fi";

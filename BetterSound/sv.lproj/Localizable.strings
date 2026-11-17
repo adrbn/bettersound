@@ -1,0 +1,13 @@
+"Sound" = "Ljud";
+"Output" = "Utmatning";
+"Sound Settings…" = "Ljudinställningar…";
+"Apps" = "Appar";
+"System Output" = "Systemets utmatning";
+"Allow" = "Tillåt";
+"Per-app volume needs access to system audio. Nothing is recorded." = "Volym per app kräver åtkomst till systemljudet. Inget spelas in.";
+"Quit BetterSound" = "Avsluta BetterSound";
+"No app is playing sound" = "Ingen app spelar upp ljud";
+"Open at Login" = "Öppna vid inloggning";
+"Check for Updates…" = "Sök efter uppdateringar…";
+"BetterSound on GitHub" = "BetterSound på GitHub";
+"Support on Ko-fi" = "Stöd på Ko-fi";

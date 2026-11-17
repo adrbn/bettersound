@@ -25,7 +25,7 @@ BetterSound remplace l'élément Son de la barre des menus et du Centre de contr
   <img src="https://img.shields.io/badge/pilote%20audio-aucun-FAC233?style=flat-square&labelColor=121212" alt="Aucun pilote audio">
 </p>
 
-<p align="center">Gratuit et open source · une alternative gratuite à Native Sound Mixer · anglais et français</p>
+<p align="center">Gratuit et open source · une alternative gratuite à Native Sound Mixer · 23 langues</p>
 
 <p align="center"><sub><a href="README.md">English</a> · <b>Français</b> · <a href="README.de.md">Deutsch</a> · <a href="README.es.md">Español</a> · <a href="README.it.md">Italiano</a> · <a href="README.ru.md">Русский</a> · <a href="README.zh-CN.md">简体中文</a></sub></p>
 
@@ -67,7 +67,7 @@ macOS n'a qu'un volume pour tout. BetterSound donne à chaque app son curseur, s
 **L'app**
 - S'ouvre au démarrage. Clic droit sur l'icône : Ouvrir au démarrage, Rechercher des mises à jour, GitHub, Ko-fi et Quitter.
 - Mises à jour automatiques (Sparkle, signées EdDSA).
-- Anglais et français.
+- 23 langues : English, Français, Deutsch, Español, Italiano, Português, Nederlands, Svenska, Norsk, Dansk, Suomi, Polski, Čeština, Română, Türkçe, Ελληνικά, Русский, Українська, 简体中文, 繁體中文, 日本語, 한국어, ไทย.
 
 ## Installation
 

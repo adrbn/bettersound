@@ -25,7 +25,7 @@ BetterSound 取代菜单栏和控制中心里的“声音”，外观完全一�
   <img src="https://img.shields.io/badge/audio%20driver-none-FAC233?style=flat-square&labelColor=121212" alt="no audio driver">
 </p>
 
-<p align="center">免费开源 · Native Sound Mixer 的免费替代品 · 英文和法文界面</p>
+<p align="center">免费开源 · Native Sound Mixer 的免费替代品 · 23 种界面语言</p>
 
 <p align="center"><sub><a href="README.md">English</a> · <a href="README.fr.md">Français</a> · <a href="README.de.md">Deutsch</a> · <a href="README.es.md">Español</a> · <a href="README.it.md">Italiano</a> · <a href="README.ru.md">Русский</a> · <b>简体中文</b></sub></p>
 
@@ -67,7 +67,7 @@ macOS 只有一个音量。BetterSound 让每个 App 拥有自己的滑块、静
 **App**
 - 登录时打开。右键点按图标：登录时打开、检查更新、GitHub、Ko-fi、退出。
 - 自动更新（Sparkle，EdDSA 签名）。
-- 英文和法文。
+- 23 种语言：English、Français、Deutsch、Español、Italiano、Português、Nederlands、Svenska、Norsk、Dansk、Suomi、Polski、Čeština、Română、Türkçe、Ελληνικά、Русский、Українська、简体中文、繁體中文、日本語、한국어、ไทย。
 
 ## 安装
 

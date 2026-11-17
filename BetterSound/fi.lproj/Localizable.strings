@@ -1,0 +1,13 @@
+"Sound" = "Ääni";
+"Output" = "Lähtö";
+"Sound Settings…" = "Ääni-asetukset…";
+"Apps" = "Apit";
+"System Output" = "Järjestelmän ulostulo";
+"Allow" = "Salli";
+"Per-app volume needs access to system audio. Nothing is recorded." = "Appikohtainen äänenvoimakkuus tarvitsee pääsyn järjestelmän ääneen. Mitään ei tallenneta.";
+"Quit BetterSound" = "Lopeta BetterSound";
+"No app is playing sound" = "Mikään appi ei toista ääntä";
+"Open at Login" = "Avaa sisäänkirjautuessa";
+"Check for Updates…" = "Tarkista päivitykset…";
+"BetterSound on GitHub" = "BetterSound GitHubissa";
+"Support on Ko-fi" = "Tue Ko-fissa";

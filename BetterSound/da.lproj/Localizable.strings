@@ -1,0 +1,13 @@
+"Sound" = "Lyd";
+"Output" = "Lyd ud";
+"Sound Settings…" = "Lydindstillinger…";
+"Apps" = "Apps";
+"System Output" = "Systemoutput";
+"Allow" = "Tillad";
+"Per-app volume needs access to system audio. Nothing is recorded." = "Lydstyrke pr. app kræver adgang til systemlyd. Intet optages.";
+"Quit BetterSound" = "Afslut BetterSound";
+"No app is playing sound" = "Ingen app afspiller lyd";
+"Open at Login" = "Åbn ved login";
+"Check for Updates…" = "Søg efter opdateringer…";
+"BetterSound on GitHub" = "BetterSound på GitHub";
+"Support on Ko-fi" = "Støt på Ko-fi";

@@ -25,7 +25,7 @@ BetterSound ersetzt das Ton-Symbol in der Menüleiste und im Kontrollzentrum, si
   <img src="https://img.shields.io/badge/audio%20driver-none-FAC233?style=flat-square&labelColor=121212" alt="no audio driver">
 </p>
 
-<p align="center">Kostenlos und Open Source · eine kostenlose Alternative zu Native Sound Mixer · Englisch und Französisch</p>
+<p align="center">Kostenlos und Open Source · eine kostenlose Alternative zu Native Sound Mixer · 23 Sprachen</p>
 
 <p align="center"><sub><a href="README.md">English</a> · <a href="README.fr.md">Français</a> · <b>Deutsch</b> · <a href="README.es.md">Español</a> · <a href="README.it.md">Italiano</a> · <a href="README.ru.md">Русский</a> · <a href="README.zh-CN.md">简体中文</a></sub></p>
 
@@ -67,7 +67,7 @@ macOS hat eine einzige Lautstärke für alles. BetterSound gibt jeder App ihren 
 **Die App**
 - Startet bei der Anmeldung. Rechtsklick auf das Symbol: Beim Anmelden öffnen, Nach Updates suchen, GitHub, Ko-fi, Beenden.
 - Automatische Updates (Sparkle, EdDSA-signiert).
-- Englisch und Französisch.
+- 23 Sprachen: English, Français, Deutsch, Español, Italiano, Português, Nederlands, Svenska, Norsk, Dansk, Suomi, Polski, Čeština, Română, Türkçe, Ελληνικά, Русский, Українська, 简体中文, 繁體中文, 日本語, 한국어, ไทย.
 
 ## Installation
 

@@ -25,7 +25,7 @@ BetterSound заменяет пункт «Звук» в строке меню и
   <img src="https://img.shields.io/badge/audio%20driver-none-FAC233?style=flat-square&labelColor=121212" alt="no audio driver">
 </p>
 
-<p align="center">Бесплатно и с открытым кодом · бесплатная альтернатива Native Sound Mixer · английский и французский</p>
+<p align="center">Бесплатно и с открытым кодом · бесплатная альтернатива Native Sound Mixer · 23 языка</p>
 
 <p align="center"><sub><a href="README.md">English</a> · <a href="README.fr.md">Français</a> · <a href="README.de.md">Deutsch</a> · <a href="README.es.md">Español</a> · <a href="README.it.md">Italiano</a> · <b>Русский</b> · <a href="README.zh-CN.md">简体中文</a></sub></p>
 
@@ -67,7 +67,7 @@ BetterSound заменяет пункт «Звук» в строке меню и
 **Приложение**
 - Открывается при входе в систему. Правый клик по значку: автозапуск, проверка обновлений, GitHub, Ko-fi и выход.
 - Автоматические обновления (Sparkle, подпись EdDSA).
-- Английский и французский.
+- 23 языка: English, Français, Deutsch, Español, Italiano, Português, Nederlands, Svenska, Norsk, Dansk, Suomi, Polski, Čeština, Română, Türkçe, Ελληνικά, Русский, Українська, 简体中文, 繁體中文, 日本語, 한국어, ไทย.
 
 ## Установка
 

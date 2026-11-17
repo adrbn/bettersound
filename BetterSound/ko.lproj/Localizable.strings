@@ -1,0 +1,13 @@
+"Sound" = "사운드";
+"Output" = "출력";
+"Sound Settings…" = "사운드 설정…";
+"Apps" = "앱";
+"System Output" = "시스템 출력";
+"Allow" = "허용";
+"Per-app volume needs access to system audio. Nothing is recorded." = "앱별 음량을 조절하려면 시스템 오디오에 접근해야 합니다. 아무것도 녹음되지 않습니다.";
+"Quit BetterSound" = "BetterSound 종료";
+"No app is playing sound" = "사운드를 재생하는 앱 없음";
+"Open at Login" = "로그인 시 열기";
+"Check for Updates…" = "업데이트 확인…";
+"BetterSound on GitHub" = "GitHub의 BetterSound";
+"Support on Ko-fi" = "Ko-fi에서 후원하기";

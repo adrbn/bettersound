@@ -1,0 +1,13 @@
+"Sound" = "Geluid";
+"Output" = "Uitvoer";
+"Sound Settings…" = "Geluidsinstellingen…";
+"Apps" = "Apps";
+"System Output" = "Systeemuitvoer";
+"Allow" = "Sta toe";
+"Per-app volume needs access to system audio. Nothing is recorded." = "Volume per app heeft toegang tot systeemaudio nodig. Er wordt niets opgenomen.";
+"Quit BetterSound" = "Stop BetterSound";
+"No app is playing sound" = "Geen app speelt geluid af";
+"Open at Login" = "Open bij inloggen";
+"Check for Updates…" = "Zoek naar updates…";
+"BetterSound on GitHub" = "BetterSound op GitHub";
+"Support on Ko-fi" = "Steun op Ko-fi";

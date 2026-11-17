@@ -1,0 +1,13 @@
+"Sound" = "聲音";
+"Output" = "輸出";
+"Sound Settings…" = "聲音設定⋯";
+"Apps" = "App";
+"System Output" = "系統輸出";
+"Allow" = "允許";
+"Per-app volume needs access to system audio. Nothing is recorded." = "依 App 調整音量需要取用系統音訊。不會錄製任何內容。";
+"Quit BetterSound" = "結束 BetterSound";
+"No app is playing sound" = "沒有 App 正在播放聲音";
+"Open at Login" = "登入時打開";
+"Check for Updates…" = "檢查更新項目…";
+"BetterSound on GitHub" = "GitHub 上的 BetterSound";
+"Support on Ko-fi" = "在 Ko-fi 上支持";

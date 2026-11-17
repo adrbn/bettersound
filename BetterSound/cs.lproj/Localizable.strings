@@ -1,0 +1,13 @@
+"Sound" = "Zvuk";
+"Output" = "Výstup";
+"Sound Settings…" = "Nastavení zvuku…";
+"Apps" = "Aplikace";
+"System Output" = "Systémový výstup";
+"Allow" = "Povolit";
+"Per-app volume needs access to system audio. Nothing is recorded." = "Hlasitost pro jednotlivé aplikace vyžaduje přístup ke zvuku systému. Nic se nenahrává.";
+"Quit BetterSound" = "Ukončit BetterSound";
+"No app is playing sound" = "Žádná aplikace nepřehrává zvuk";
+"Open at Login" = "Otevřít při přihlášení";
+"Check for Updates…" = "Zkontrolovat aktualizace…";
+"BetterSound on GitHub" = "BetterSound na GitHubu";
+"Support on Ko-fi" = "Podpořit na Ko-fi";

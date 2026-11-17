@@ -1,0 +1,13 @@
+"Sound" = "Sunet";
+"Output" = "Ieșire";
+"Sound Settings…" = "Configurări Sunet…";
+"Apps" = "Aplicații";
+"System Output" = "Ieșirea sistemului";
+"Allow" = "Permite";
+"Per-app volume needs access to system audio. Nothing is recorded." = "Volumul pe aplicație necesită acces la sunetul sistemului. Nu se înregistrează nimic.";
+"Quit BetterSound" = "Ieși din BetterSound";
+"No app is playing sound" = "Nicio aplicație nu redă sunet";
+"Open at Login" = "Deschide la autentificare";
+"Check for Updates…" = "Caută actualizări…";
+"BetterSound on GitHub" = "BetterSound pe GitHub";
+"Support on Ko-fi" = "Susține pe Ko-fi";

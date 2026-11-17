@@ -1,0 +1,13 @@
+"Sound" = "サウンド";
+"Output" = "出力";
+"Sound Settings…" = "サウンド設定…";
+"Apps" = "アプリ";
+"System Output" = "システムの出力";
+"Allow" = "許可";
+"Per-app volume needs access to system audio. Nothing is recorded." = "アプリごとの音量調整にはシステムオーディオへのアクセスが必要です。録音は一切行いません。";
+"Quit BetterSound" = "BetterSoundを終了";
+"No app is playing sound" = "サウンドを再生中のアプリはありません";
+"Open at Login" = "ログイン時に開く";
+"Check for Updates…" = "アップデートを確認…";
+"BetterSound on GitHub" = "GitHubのBetterSound";
+"Support on Ko-fi" = "Ko-fiで支援";

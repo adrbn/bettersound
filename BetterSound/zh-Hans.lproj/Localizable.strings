@@ -1,0 +1,13 @@
+"Sound" = "声音";
+"Output" = "输出";
+"Sound Settings…" = "声音设置…";
+"Apps" = "App";
+"System Output" = "系统输出";
+"Allow" = "允许";
+"Per-app volume needs access to system audio. Nothing is recorded." = "按 App 调节音量需要访问系统音频。不会录制任何内容。";
+"Quit BetterSound" = "退出 BetterSound";
+"No app is playing sound" = "没有 App 在播放声音";
+"Open at Login" = "登录时打开";
+"Check for Updates…" = "检查更新…";
+"BetterSound on GitHub" = "GitHub 上的 BetterSound";
+"Support on Ko-fi" = "在 Ko-fi 上支持";

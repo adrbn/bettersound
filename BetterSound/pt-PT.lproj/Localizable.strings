@@ -1,0 +1,13 @@
+"Sound" = "Som";
+"Output" = "Saída";
+"Sound Settings…" = "Definições de som…";
+"Apps" = "Apps";
+"System Output" = "Saída do sistema";
+"Allow" = "Permitir";
+"Per-app volume needs access to system audio. Nothing is recorded." = "O volume por app precisa de acesso ao áudio do sistema. Nada é gravado.";
+"Quit BetterSound" = "Sair do BetterSound";
+"No app is playing sound" = "Nenhuma app está a reproduzir som";
+"Open at Login" = "Abrir ao iniciar sessão";
+"Check for Updates…" = "Procurar atualizações…";
+"BetterSound on GitHub" = "BetterSound no GitHub";
+"Support on Ko-fi" = "Apoiar no Ko-fi";
