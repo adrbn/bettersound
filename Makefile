@@ -1,8 +1,10 @@
 APP = build/Build/Products/Release/BetterSound.app
+# Same numbering as the release script, so a local build never looks older than the last release.
+VERSION = MARKETING_VERSION=$(shell git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//') CURRENT_PROJECT_VERSION=$(shell git rev-list --count HEAD)
 
 build:
 	xcodegen generate -q
-	xcodebuild -project BetterSound.xcodeproj -scheme BetterSound -configuration Release -derivedDataPath build -quiet $(SIGN)
+	xcodebuild -project BetterSound.xcodeproj -scheme BetterSound -configuration Release -derivedDataPath build -quiet $(VERSION) $(SIGN)
 
 # Signs with your Developer ID (set TEAM), installs to /Applications and relaunches.
 install: SIGN = BS_IDENTITY="Developer ID Application" BS_TEAM=$(TEAM)

@@ -26,8 +26,9 @@ def build_notes(notes_file: str | None) -> str:
         with open(notes_file, encoding="utf-8") as handle:
             for line in handle:
                 line = line.strip()
+                line = re.sub(r"^\w+(\(.*?\))?: ", "", line)  # drop "feat: "
                 if line:
-                    items.append(f"<li>{html.escape(line)}</li>")
+                    items.append(f"<li>{html.escape(line[0].upper() + line[1:])}</li>")
     return "".join(items) or "<li>Maintenance and improvements.</li>"
 
 
@@ -58,7 +59,7 @@ def main() -> None:
     args = parser.parse_args()
 
     enclosure_attrs = sign(args.sign_update, args.key_file, args.zip)
-    body = f"<h2>BetterSound {html.escape(args.short)}</h2><ul>{build_notes(args.notes_file)}</ul>"
+    body = f"<style>:root{{color-scheme:light dark}}body{{font:13px -apple-system}}</style><h2>BetterSound {html.escape(args.short)}</h2><ul>{build_notes(args.notes_file)}</ul>"
     short = html.escape(args.short)
     url = html.escape(args.url, quote=True)
 
