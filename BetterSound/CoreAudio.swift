@@ -166,7 +166,10 @@ extension Audio {
     static func owner(_ pid: pid_t) -> Owner? {
         let app = owningApp(pid)
         if let app, app.processIdentifier != pid, let exe = executablePath(pid),
-           let bundle = app.bundleURL?.path, !exe.hasPrefix(bundle + "/"), isDescendant(pid, of: app.processIdentifier) {
+           let bundle = app.bundleURL?.path, !exe.hasPrefix(bundle + "/"),
+           isDescendant(pid, of: app.processIdentifier) || !exe.hasPrefix("/System/") {
+            // detached launches (ppid 1, e.g. a game started from a Claude session) still get their own row;
+            // system XPC helpers (WebKit content etc.) stay with the app that owns them
             return Owner(executable: exe, pid: pid)
         }
         return app.map { Owner(id: $0.bundleIdentifier ?? "pid:\($0.processIdentifier)", name: $0.localizedName ?? "",
