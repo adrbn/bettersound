@@ -78,7 +78,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         if CommandLine.arguments.contains("--diag") {
             DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [mixer] in
-                let procs = Audio.processes().map { "\($0.pid)->\(Audio.owningApp($0.pid)?.bundleIdentifier ?? "nil") playing=\($0.isPlaying)" }
+                let procs = Audio.processes().map { "\($0.pid)->\(Audio.owner($0.pid)?.id ?? "nil") playing=\($0.isPlaying)" }
                 let text = "permission: \(AudioPermission.status)\napps: \(mixer.apps.map(\.id))\n\(mixer.debugState)\nprocs: \(procs)\n"
                 try? text.write(toFile: "/tmp/bettersound-diag.txt", atomically: true, encoding: .utf8)
             }

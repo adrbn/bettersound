@@ -33,7 +33,7 @@ final class Mixer: ObservableObject {
     private var volumeListeners: [AudioListener] = []
     private var listenedDevice = AudioObjectID(kAudioObjectUnknown)
     private var refreshPending = false
-    private var owners: [pid_t: NSRunningApplication?] = [:]
+    private var owners: [pid_t: Owner?] = [:]
     private let defaults = UserDefaults.standard
 
     init() {
@@ -196,12 +196,12 @@ final class Mixer: ObservableObject {
         // Short-lived audio clients come and go several times a second: resolve each pid once.
         owners = owners.filter { pid in processes.contains { $0.pid == pid.key } }
         for p in processes where p.pid > 0 && p.pid != me {
-            if owners[p.pid] == nil { owners[p.pid] = .some(Audio.owningApp(p.pid)) }
-            guard let app = owners[p.pid] ?? nil, app.processIdentifier != me else { continue }
-            let id = app.bundleIdentifier ?? "pid:\(app.processIdentifier)"
+            if owners[p.pid] == nil { owners[p.pid] = .some(Audio.owner(p.pid)) }
+            guard let owner = owners[p.pid] ?? nil, owner.pid != me else { continue }
+            let id = owner.id
             if byApp[id] == nil {
                 byApp[id] = apps.first { $0.id == id }.map { AppRow(id: id, name: $0.name, icon: $0.icon, processes: []) }
-                    ?? AppRow(id: id, name: app.localizedName ?? id, icon: app.icon ?? NSImage(), processes: [])
+                    ?? AppRow(id: id, name: owner.name.isEmpty ? id : owner.name, icon: owner.icon, processes: [])
             }
             byApp[id]?.processes.insert(p.objectID)
             if p.isPlaying { playing.insert(id) }

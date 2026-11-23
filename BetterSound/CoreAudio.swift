@@ -154,12 +154,72 @@ extension Audio {
         var p = responsiblePID(pid)
         for _ in 0..<8 where p > 1 {
             if let app = NSRunningApplication(processIdentifier: p), app.bundleIdentifier != nil { return app }
-            var info = kinfo_proc(), size = MemoryLayout<kinfo_proc>.size
-            var mib: [Int32] = [CTL_KERN, KERN_PROC, KERN_PROC_PID, p]
-            guard sysctl(&mib, 4, &info, &size, nil, 0) == 0 else { return nil }
-            p = info.kp_eproc.e_ppid
+            guard let parent = parentPID(p) else { return nil }
+            p = parent
         }
         return nil
+    }
+
+    /// Who a process's row belongs to. A program merely started from a terminal or from Claude
+    /// (a game launched by a script) is its own row, not the launcher's: muting Terminal or Claude
+    /// must not mute it. Helpers that live inside the app's bundle, and XPC services, stay with the app.
+    static func owner(_ pid: pid_t) -> Owner? {
+        let app = owningApp(pid)
+        if let app, app.processIdentifier != pid, let exe = executablePath(pid),
+           let bundle = app.bundleURL?.path, !exe.hasPrefix(bundle + "/"), isDescendant(pid, of: app.processIdentifier) {
+            return Owner(executable: exe, pid: pid)
+        }
+        return app.map { Owner(id: $0.bundleIdentifier ?? "pid:\($0.processIdentifier)", name: $0.localizedName ?? "",
+                               icon: $0.icon ?? NSImage(), pid: $0.processIdentifier) }
+    }
+
+    static func parentPID(_ pid: pid_t) -> pid_t? {
+        var info = kinfo_proc(), size = MemoryLayout<kinfo_proc>.size
+        var mib: [Int32] = [CTL_KERN, KERN_PROC, KERN_PROC_PID, pid]
+        guard sysctl(&mib, 4, &info, &size, nil, 0) == 0, size > 0 else { return nil }
+        return info.kp_eproc.e_ppid
+    }
+
+    static func isDescendant(_ pid: pid_t, of ancestor: pid_t) -> Bool {
+        var p = pid
+        for _ in 0..<16 {
+            guard let parent = parentPID(p), parent > 1 else { return false }
+            if parent == ancestor { return true }
+            p = parent
+        }
+        return false
+    }
+
+    static func executablePath(_ pid: pid_t) -> String? {
+        var buf = [CChar](repeating: 0, count: 4 * Int(MAXPATHLEN))
+        return proc_pidpath(pid, &buf, UInt32(buf.count)) > 0 ? String(cString: buf) : nil
+    }
+}
+
+/// One row's identity: an app, or a program that isn't part of the app that launched it.
+struct Owner {
+    let id: String
+    let name: String
+    let icon: NSImage
+    let pid: pid_t
+
+    init(id: String, name: String, icon: NSImage, pid: pid_t) {
+        self.id = id; self.name = name; self.icon = icon; self.pid = pid
+    }
+
+    /// Named after the enclosing .app when there is one, else after the executable; keyed by path
+    /// so its volume is remembered across launches.
+    init(executable exe: String, pid: pid_t) {
+        if let range = exe.range(of: ".app/"), let bundle = Bundle(path: String(exe[..<range.lowerBound]) + ".app") {
+            let name = bundle.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String
+                ?? bundle.object(forInfoDictionaryKey: "CFBundleName") as? String
+            self.init(id: bundle.bundleIdentifier ?? "path:" + bundle.bundlePath,
+                      name: name ?? bundle.bundleURL.deletingPathExtension().lastPathComponent,
+                      icon: NSWorkspace.shared.icon(forFile: bundle.bundlePath), pid: pid)
+        } else {
+            self.init(id: "path:" + exe, name: (exe as NSString).lastPathComponent,
+                      icon: NSWorkspace.shared.icon(forFile: exe), pid: pid)
+        }
     }
 }
 
