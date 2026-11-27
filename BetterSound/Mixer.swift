@@ -31,6 +31,8 @@ final class Mixer: ObservableObject {
     private var systemListeners: [AudioListener] = []
     private var processListeners: [AudioObjectID: AudioListener] = [:]
     private var volumeListeners: [AudioListener] = []
+    /// Bluetooth devices appear before their output stream: listen for the stream to show up.
+    private var streamListeners: [AudioObjectID: AudioListener] = [:]
     private var listenedDevice = AudioObjectID(kAudioObjectUnknown)
     private var refreshPending = false
     private var owners: [pid_t: Owner?] = [:]
@@ -161,6 +163,11 @@ final class Mixer: ObservableObject {
         // Assign only what changed: every @Published write redraws the panel and the icon.
         let newDevices = Audio.outputDevices()
         if newDevices != devices { devices = newDevices }
+        let all = Set(AudioObjectID.system.readArray(kAudioHardwarePropertyDevices, of: AudioObjectID.self))
+        streamListeners = streamListeners.filter { all.contains($0.key) }
+        for id in all where streamListeners[id] == nil {
+            streamListeners[id] = AudioListener(id, kAudioDevicePropertyStreams, kAudioObjectPropertyScopeOutput, onChange: changed)
+        }
         let newDefault = Audio.defaultOutput
         if newDefault != defaultDeviceID { defaultDeviceID = newDefault }
         let m = Audio.masterVolume

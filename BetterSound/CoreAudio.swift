@@ -86,10 +86,13 @@ enum Audio {
     static func outputDevices() -> [OutputDevice] {
         AudioObjectID.system.readArray(kAudioHardwarePropertyDevices, of: AudioObjectID.self).compactMap { id in
             let streams = id.readArray(kAudioDevicePropertyStreams, kAudioObjectPropertyScopeOutput, of: AudioStreamID.self)
-            guard !streams.isEmpty,
-                  let uid = id.readString(kAudioDevicePropertyDeviceUID),
+            guard let uid = id.readString(kAudioDevicePropertyDeviceUID),
                   let name = id.readString(kAudioObjectPropertyName) else { return nil }
             let transport: UInt32 = id.read(kAudioDevicePropertyTransportType, default: 0)
+            // AirPods connected while another device holds their audio have no output stream yet,
+            // but Apple's Sound menu still lists them: so do we (Bluetooth outputs end in ":output").
+            let bluetooth = transport == kAudioDeviceTransportTypeBluetooth || transport == kAudioDeviceTransportTypeBluetoothLE
+            guard !streams.isEmpty || (bluetooth && uid.hasSuffix(":output")) else { return nil }
             // Hide aggregates/virtual devices macOS itself doesn't show in the Sound menu.
             if transport == kAudioDeviceTransportTypeAggregate || uid.hasPrefix("CADefaultDeviceAggregate") { return nil }
             return OutputDevice(id: id, uid: uid, name: name, transport: transport)
